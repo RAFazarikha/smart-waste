@@ -1,0 +1,142 @@
+import json
+
+nb = {
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Smart Waste Classification - MobileNetV2 Training\n",
+    "Jalankan di Google Colab dengan GPU T4 (Runtime > Change runtime type > T4 GPU).\n",
+    "Output: `model.pth`, `confusion_matrix.png`, `classification_report.json`, `training_curves.png`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# 1. Setup kaggle credentials (upload kaggle.json atau isi langsung)\n",
+    "import os\n",
+    "!pip install -q kaggle scikit-learn seaborn\n",
+    "# os.environ['KAGGLE_USERNAME'] = 'xxx'\n",
+    "# os.environ['KAGGLE_KEY'] = 'xxx'\n",
+    "!mkdir -p ~/.kaggle && cp kaggle.json ~/.kaggle/ 2>/dev/null && chmod 600 ~/.kaggle/kaggle.json || true\n",
+    "!kaggle datasets download -d mostafaabla/garbage-classification --unzip -p /content/raw"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# 2. Prepare dataset: 400 gambar/kelas, 3 kelas, split 70/15/15\n",
+    "import random, shutil\n",
+    "from pathlib import Path\n",
+    "\n",
+    "SEED, PER_CLASS = 42, 400\n",
+    "MAP = {'organic': ['biological'], 'plastic': ['plastic'], 'paper': ['paper', 'cardboard']}\n",
+    "RAW, OUT = Path('/content/raw/garbage-classification'), Path('/content/data')\n",
+    "if not RAW.exists(): RAW = Path('/content/raw')\n",
+    "\n",
+    "random.seed(SEED)\n",
+    "for cls, srcs in MAP.items():\n",
+    "    files = sorted(f for s in srcs for f in (RAW / s).glob('*') if f.suffix.lower() in {'.jpg', '.jpeg', '.png'})\n",
+    "    assert len(files) >= PER_CLASS, f'{cls}: {len(files)} < {PER_CLASS}'\n",
+    "    files = random.sample(files, PER_CLASS)\n",
+    "    n_tr, n_va = int(PER_CLASS * .70), int(PER_CLASS * .15)\n",
+    "    parts = {'train': files[:n_tr], 'val': files[n_tr:n_tr + n_va], 'test': files[n_tr + n_va:]}\n",
+    "    for split, fs in parts.items():\n",
+    "        d = OUT / split / cls; d.mkdir(parents=True, exist_ok=True)\n",
+    "        for i, f in enumerate(fs): shutil.copy(f, d / f'{cls}_{i:03d}{f.suffix.lower()}')\n",
+    "\n",
+    "for s in ('train', 'val', 'test'): print(s, {c: len(list((OUT / s / c).glob('*'))) for c in MAP})"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# 3. Train MobileNetV2 + Export Evaluation\n",
+    "import json, time\n",
+    "import torch, torch.nn as nn\n",
+    "import matplotlib.pyplot as plt, seaborn as sns\n",
+    "from torchvision import datasets, models, transforms as T\n",
+    "from torch.utils.data import DataLoader\n",
+    "from sklearn.metrics import classification_report, confusion_matrix\n",
+    "\n",
+    "torch.manual_seed(42)\n",
+    "RES = Path('/content/results'); RES.mkdir(exist_ok=True)\n",
+    "MODEL = Path('/content/model.pth')\n",
+    "dev = 'cuda' if torch.cuda.is_available() else 'cpu'\n",
+    "norm = T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])\n",
+    "tf_tr = T.Compose([T.Resize((224, 224)), T.RandomHorizontalFlip(), T.RandomRotation(15), T.ColorJitter(.2, .2), T.ToTensor(), norm])\n",
+    "tf_ev = T.Compose([T.Resize((224, 224)), T.ToTensor(), norm])\n",
+    "\n",
+    "ds = {s: datasets.ImageFolder(OUT / s, tf_tr if s == 'train' else tf_ev) for s in ('train', 'val', 'test')}\n",
+    "dl = {s: DataLoader(d, batch_size=32, shuffle=(s == 'train'), num_workers=2) for s, d in ds.items()}\n",
+    "classes = ds['train'].classes\n",
+    "\n",
+    "m = models.mobilenet_v2(weights=models.MobileNet_V2_Weights.DEFAULT)\n",
+    "m.classifier = nn.Sequential(nn.Dropout(.3), nn.Linear(m.last_channel, 128), nn.ReLU(), nn.Dropout(.2), nn.Linear(128, len(classes)))\n",
+    "m.to(dev)\n",
+    "opt = torch.optim.AdamW(m.parameters(), lr=1e-4, weight_decay=1e-4)\n",
+    "loss_fn = nn.CrossEntropyLoss()\n",
+    "\n",
+    "def step(split, train=False):\n",
+    "    m.train(train); tot = correct = n = 0\n",
+    "    with torch.set_grad_enabled(train):\n",
+    "        for x, y in dl[split]:\n",
+    "            x, y = x.to(dev), y.to(dev)\n",
+    "            out = m(x); loss = loss_fn(out, y)\n",
+    "            if train: opt.zero_grad(); loss.backward(); opt.step()\n",
+    "            tot += loss.item() * len(y); correct += (out.argmax(1) == y).sum().item(); n += len(y)\n",
+    "    return tot / n, correct / n\n",
+    "\n",
+    "hist = {'tl': [], 'vl': [], 'ta': [], 'va': []}\n",
+    "best, bad = 1e9, 0\n",
+    "for ep in range(20):\n",
+    "    tl, ta = step('train', True); vl, va = step('val')\n",
+    "    for k, v in zip(hist, (tl, vl, ta, va)): hist[k].append(v)\n",
+    "    print(f'ep {ep+1:02d} | loss {tl:.3f}/{vl:.3f} | acc {ta:.3f}/{va:.3f}')\n",
+    "    if vl < best: best, bad = vl, 0; torch.save({'state': m.state_dict(), 'classes': classes}, MODEL)\n",
+    "    else:\n",
+    "        bad += 1\n",
+    "        if bad >= 4: print('Early stopping'); break\n",
+    "\n",
+    "m.load_state_dict(torch.load(MODEL)['state']); m.eval()\n",
+    "ys, ps = [], []\n",
+    "with torch.no_grad():\n",
+    "    for x, y in dl['test']: ps += m(x.to(dev)).argmax(1).cpu().tolist(); ys += y.tolist()\n",
+    "acc = sum(a == b for a, b in zip(ys, ps)) / len(ys)\n",
+    "print(f'=== TEST ACCURACY: {acc * 100:.2f}% ===')\n",
+    "rep = classification_report(ys, ps, target_names=classes, output_dict=True)\n",
+    "(RES / 'classification_report.json').write_text(json.dumps(rep, indent=2))\n",
+    "cm = confusion_matrix(ys, ps)\n",
+    "plt.figure(figsize=(5, 4)); sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=classes, yticklabels=classes)\n",
+    "plt.xlabel('Prediksi'); plt.ylabel('Aktual'); plt.tight_layout(); plt.savefig(RES / 'confusion_matrix.png', dpi=150)\n",
+    "fig, ax = plt.subplots(1, 2, figsize=(10, 4))\n",
+    "ax[0].plot(hist['tl'], label='train'); ax[0].plot(hist['vl'], label='val'); ax[0].set_title('Loss'); ax[0].legend()\n",
+    "ax[1].plot(hist['ta'], label='train'); ax[1].plot(hist['va'], label='val'); ax[1].set_title('Accuracy'); ax[1].legend()\n",
+    "plt.tight_layout(); plt.savefig(RES / 'training_curves.png', dpi=150)\n",
+    "\n",
+    "# Zip artifacts\n",
+    "!zip -j smart_waste_ml_artifacts.zip /content/model.pth /content/results/*\n",
+    "print('Download file /content/smart_waste_ml_artifacts.zip dan ekstrak ke ml/ repo')"
+   ]
+  }
+ ],
+ "metadata": {
+  "accelerator": "GPU",
+  "language_info": {"name": "python"}
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
+
+with open("smart_waste_training.ipynb", "w") as f:
+    json.dump(nb, f, indent=1)
