@@ -15,3 +15,4 @@ ml/models/*
 .next/
 next-env.d.ts
 apps/mobile/dist/
+ml/venv/
