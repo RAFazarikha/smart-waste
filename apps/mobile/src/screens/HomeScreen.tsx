@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiFetch } from '../lib/api';
 import { useAuth } from '../auth';
 import { COLORS } from '../lib/ui';
-import { CatBadge, ErrorText, StatusBadge, s } from '../components';
+import { Button, CatBadge, ErrorText, StatusBadge, s } from '../components';
 
 export default function HomeScreen({ navigation }: any) {
   const { user } = useAuth();
@@ -34,7 +34,12 @@ export default function HomeScreen({ navigation }: any) {
           <Text style={{ color: '#fff', fontSize: 22, fontWeight: '700' }}>{user?.name}</Text>
           <Text style={{ color: '#fff', marginTop: 8 }}>{stats ? `${active} laporan sedang aktif` : 'Memuat...'}</Text>
         </View>
-        <ErrorText msg={err} />
+        {err ? (
+          <View style={{ marginBottom: 12, alignItems: 'center', gap: 6 }}>
+            <ErrorText msg={err} />
+            <Button title="Coba Lagi" onPress={load} variant="outline" />
+          </View>
+        ) : null}
         {stats && (
           <View style={[s.row, { marginBottom: 12 }]}>
             {[['Total', stats.total_reports], ['Diproses', stats.in_progress_count], ['Selesai', stats.completed_count]].map(([l, v]) => (

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ImageWithFallback } from '@/components/ui/image-with-fallback';
 
 const MapView = dynamic(() => import('./MapView'), { ssr: false });
 
@@ -40,8 +41,7 @@ export default function ReportModal({ id, admin, onClose, onChanged }: { id: str
         {!r ? <p className="p-6 text-muted-foreground">{err || 'Memuat...'}</p> : (
           <div className="grid md:grid-cols-2 gap-4 mt-2">
             <div className="space-y-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={r.imageUrl} alt={r.title} className="w-full h-56 object-cover rounded-xl bg-muted" />
+              <ImageWithFallback src={r.imageUrl} alt={r.title} className="w-full h-56 object-cover rounded-xl" />
               <MapView lat={r.latitude} lng={r.longitude} />
               <p className="text-xs text-muted-foreground">{r.address || '-'} ({r.latitude.toFixed(5)}, {r.longitude.toFixed(5)})</p>
             </div>

@@ -5,6 +5,8 @@ import { apiFetch } from '@/lib/api';
 import { fmtDate } from '@/lib/ui';
 import { CategoryBadge, StatusBadge } from './Badge';
 import ReportModal from './ReportModal';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { ImageWithFallback } from '@/components/ui/image-with-fallback';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -20,6 +22,8 @@ export default function ReportsTable({ admin }: { admin: boolean }) {
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState<string | null>(null);
   const [err, setErr] = useState('');
+  const [toDelete, setToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const [dq, setDq] = useState('');
   useEffect(() => { const t = setTimeout(() => { setDq(q); setPage(1); }, 300); return () => clearTimeout(t); }, [q]);
@@ -31,9 +35,12 @@ export default function ReportsTable({ admin }: { admin: boolean }) {
   }, [page, dq, status, category]);
   useEffect(() => { load(); }, [load]);
 
-  const remove = async (id: string) => {
-    if (!confirm('Hapus laporan ini?')) return;
-    try { await apiFetch(`/reports/${id}`, { method: 'DELETE' }); load(); } catch (e: any) { setErr(e.message); }
+  const confirmDelete = async () => {
+    if (!toDelete) return;
+    setDeleting(true); setErr('');
+    try { await apiFetch(`/reports/${toDelete.id}`, { method: 'DELETE' }); setToDelete(null); load(); }
+    catch (e: any) { setErr(e.message); }
+    finally { setDeleting(false); }
   };
 
   return (
@@ -64,14 +71,14 @@ export default function ReportsTable({ admin }: { admin: boolean }) {
           <TableBody>
             {rows.map((r) => (
               <TableRow key={r.id}>
-                <TableCell>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={r.imageUrl} alt="" className="size-11 rounded-lg object-cover bg-muted" /></TableCell>
+                <TableCell><ImageWithFallback src={r.imageUrl} alt={r.title} className="size-11 rounded-lg object-cover" /></TableCell>
                 <TableCell className="font-medium max-w-48"><button onClick={() => setOpen(r.id)} className="text-left hover:text-primary hover:underline">{r.title}</button></TableCell>
                 <TableCell><CategoryBadge category={r.category} /></TableCell>
                 <TableCell className="text-muted-foreground max-w-40 truncate">{r.address || `${r.latitude.toFixed(3)}, ${r.longitude.toFixed(3)}`}</TableCell>
                 {admin && <TableCell>{r.user?.name}</TableCell>}
                 <TableCell className="whitespace-nowrap text-muted-foreground">{fmtDate(r.createdAt)}</TableCell>
                 <TableCell><StatusBadge status={r.status} /></TableCell>
-                <TableCell><Button variant="ghost" size="icon" onClick={() => remove(r.id)} aria-label={`Hapus ${r.title}`} className="text-muted-foreground hover:text-destructive"><Trash2 className="size-4" /></Button></TableCell>
+                <TableCell><Button variant="ghost" size="icon" onClick={() => setToDelete({ id: r.id, title: r.title })} aria-label={`Hapus ${r.title}`} className="text-muted-foreground hover:text-destructive"><Trash2 className="size-4" /></Button></TableCell>
               </TableRow>
             ))}
             {!rows.length && <TableRow><TableCell colSpan={8} className="p-8 text-center text-muted-foreground">Tidak ada laporan.</TableCell></TableRow>}
@@ -87,6 +94,7 @@ export default function ReportsTable({ admin }: { admin: boolean }) {
         </div>
       </div>
       {open && <ReportModal id={open} admin={admin} onClose={() => setOpen(null)} onChanged={load} />}
+      <ConfirmDialog open={!!toDelete} title="Hapus Laporan" description={`Yakin ingin menghapus laporan "${toDelete?.title}"? Tindakan ini tidak dapat dibatalkan.`} loading={deleting} onConfirm={confirmDelete} onCancel={() => setToDelete(null)} />
     </div>
   );
 }

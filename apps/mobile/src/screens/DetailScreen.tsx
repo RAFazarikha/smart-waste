@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Image, ScrollView, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { apiFetch } from '../lib/api';
-import { CatBadge, ErrorText, StatusBadge, s } from '../components';
+import { Button, CatBadge, ErrorText, StatusBadge, s } from '../components';
 
 export default function DetailScreen({ route }: any) {
   const [r, setR] = useState<any>(null);
@@ -11,7 +11,17 @@ export default function DetailScreen({ route }: any) {
     apiFetch(`/reports/${route.params.id}`).then((x) => setR(x.data)).catch((e) => setErr(e.message));
   }, [route.params.id]));
 
-  if (!r) return <View style={[s.screen, s.pad]}><ErrorText msg={err} /><Text style={s.muted}>{err ? '' : 'Memuat...'}</Text></View>;
+  const reload = () => {
+    setErr('');
+    apiFetch(`/reports/${route.params.id}`).then((x) => setR(x.data)).catch((e) => setErr(e.message));
+  };
+  if (!r) return (
+    <View style={[s.screen, s.pad, { justifyContent: 'center', alignItems: 'center' }]}>
+      <ErrorText msg={err} />
+      {!err && <Text style={s.muted}>Memuat detail laporan...</Text>}
+      {err && <Button title="Coba Lagi" onPress={reload} variant="outline" />}
+    </View>
+  );
   return (
     <ScrollView style={s.screen} contentContainerStyle={s.pad}>
       <Image source={{ uri: r.imageUrl }} accessibilityLabel={r.title} style={{ width: '100%', height: 220, borderRadius: 12, backgroundColor: '#e2e8f0' }} />

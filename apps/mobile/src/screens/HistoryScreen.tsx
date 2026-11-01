@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { apiFetch } from '../lib/api';
-import { CatBadge, ErrorText, StatusBadge, s } from '../components';
+import { Button, CatBadge, ErrorText, StatusBadge, s } from '../components';
 
 export default function HistoryScreen({ navigation }: any) {
   const [rows, setRows] = useState<any[]>([]);
@@ -20,7 +20,12 @@ export default function HistoryScreen({ navigation }: any) {
 
   return (
     <View style={s.screen}>
-      <ErrorText msg={err} />
+      {err ? (
+        <View style={[s.pad, { alignItems: 'center', gap: 8 }]}>
+          <ErrorText msg={err} />
+          <Button title="Coba Lagi" onPress={() => load(1, true)} variant="outline" />
+        </View>
+      ) : null}
       <FlatList data={rows} keyExtractor={(r) => r.id} contentContainerStyle={s.pad}
         refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }}
         onEndReached={() => page.n < page.last && load(page.n + 1, false)} onEndReachedThreshold={0.4}

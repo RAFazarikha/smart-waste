@@ -2,6 +2,8 @@ import 'express-async-errors';
 import 'dotenv/config';
 import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
+import multer from 'multer';
+import { Prisma } from '@prisma/client';
 import { authRouter } from './routes/auth';
 import { reportsRouter } from './routes/reports';
 import { statsRouter } from './routes/stats';
@@ -22,8 +24,25 @@ app.use('/api/stats', statsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api', mediaRouter);
 
-// Express 4 tidak menangkap rejection async; bungkus di sini supaya 500 rapi, bukan proses mati
+// 404 untuk rute yang tidak dikenal (setelah semua router)
+app.use((_q, res) => { res.status(404).json({ error: 'Endpoint tidak ditemukan' }); });
+
+// Penanganan error terpusat: pesan yang bisa ditampilkan UI, detail internal hanya di log
 app.use((e: any, _q: Request, res: Response, _n: NextFunction) => {
+  if (res.headersSent) return;
+  if (e instanceof multer.MulterError)
+    return void res.status(400).json({ error: e.code === 'LIMIT_FILE_SIZE' ? 'Ukuran file maksimal 5 MB' : 'Upload file gagal' });
+  if (e?.type === 'entity.parse.failed') return void res.status(400).json({ error: 'Format JSON tidak valid' });
+  if (e?.type === 'entity.too.large') return void res.status(413).json({ error: 'Data terlalu besar' });
+  if (e instanceof Prisma.PrismaClientKnownRequestError) {
+    if (e.code === 'P2002') return void res.status(409).json({ error: 'Data sudah ada' });
+    if (e.code === 'P2025') return void res.status(404).json({ error: 'Data tidak ditemukan' });
+    if (e.code === 'P2003') return void res.status(409).json({ error: 'Data masih terkait dengan data lain' });
+  }
+  if (e instanceof Prisma.PrismaClientInitializationError) {
+    console.error(e);
+    return void res.status(503).json({ error: 'Database tidak dapat dihubungi. Coba lagi nanti.' });
+  }
   console.error(e);
   res.status(500).json({ error: 'Terjadi kesalahan server' });
 });

@@ -24,7 +24,7 @@ export default function Dashboard({ title }: { title: string }) {
     { label: 'In Progress', v: s.in_progress_count, cls: 'text-blue-600' },
     { label: 'Selesai', v: s.completed_count, cls: 'text-emerald-600' },
   ];
-  const pie = Object.entries(s.category_counts).map(([k, v]) => ({ name: CATEGORY[k]?.label ?? k, value: v, color: CATEGORY[k]?.color ?? '#94a3b8' }));
+  const pie = Object.entries(s.category_counts).map(([k, v]) => ({ name: CATEGORY[k]?.label ?? k, value: v, color: CATEGORY[k]?.color ?? 'var(--muted-foreground)' }));
   const trend = s.daily_trends.map((d) => ({ ...d, label: d.date.slice(5) }));
 
   return (

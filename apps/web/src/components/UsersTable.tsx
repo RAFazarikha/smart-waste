@@ -6,17 +6,30 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 export default function UsersTable() {
   const [rows, setRows] = useState<any[]>([]);
   const [err, setErr] = useState('');
+  const [toDelete, setToDelete] = useState<any>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
   const me = getCachedUser();
   const load = () => apiFetch('/users').then((r) => setRows(r.data)).catch((e) => setErr(e.message));
   useEffect(() => { load(); }, []);
 
-  const act = async (fn: () => Promise<any>) => { setErr(''); try { await fn(); await load(); } catch (e: any) { setErr(e.message); } };
-  const role = (u: any) => act(() => apiFetch(`/users/${u.id}/role`, { method: 'PATCH', body: JSON.stringify({ role: u.role === 'admin' ? 'user' : 'admin' }) }));
-  const del = (u: any) => confirm(`Hapus ${u.name}? Laporannya ikut terhapus.`) && act(() => apiFetch(`/users/${u.id}`, { method: 'DELETE' }));
+  const changeRole = async (u: any) => {
+    setBusyId(u.id); setErr('');
+    try { await apiFetch(`/users/${u.id}/role`, { method: 'PATCH', body: JSON.stringify({ role: u.role === 'admin' ? 'user' : 'admin' }) }); await load(); }
+    catch (e: any) { setErr(e.message); }
+    finally { setBusyId(null); }
+  };
+  const confirmDelete = async () => {
+    if (!toDelete) return;
+    setBusyId(toDelete.id); setErr('');
+    try { await apiFetch(`/users/${toDelete.id}`, { method: 'DELETE' }); setToDelete(null); await load(); }
+    catch (e: any) { setErr(e.message); }
+    finally { setBusyId(null); }
+  };
 
   return (
     <div className="space-y-4">
@@ -39,8 +52,12 @@ export default function UsersTable() {
                 <TableCell className="whitespace-nowrap text-muted-foreground">{fmtDate(u.createdAt)}</TableCell>
                 <TableCell className="whitespace-nowrap text-right space-x-2">
                   {u.id !== me?.id && (<>
-                    <Button variant="outline" size="sm" onClick={() => role(u)}>Jadikan {u.role === 'admin' ? 'user' : 'admin'}</Button>
-                    <Button variant="ghost" size="sm" onClick={() => del(u)} className="text-destructive hover:bg-destructive/10">Hapus</Button>
+                    <Button variant="outline" size="sm" disabled={busyId === u.id} onClick={() => changeRole(u)}>
+                      {busyId === u.id ? 'Memproses...' : `Jadikan ${u.role === 'admin' ? 'user' : 'admin'}`}
+                    </Button>
+                    <Button variant="ghost" size="sm" disabled={busyId === u.id} onClick={() => setToDelete(u)} className="text-destructive hover:bg-destructive/10">
+                      Hapus
+                    </Button>
                   </>)}
                 </TableCell>
               </TableRow>
@@ -48,6 +65,7 @@ export default function UsersTable() {
           </TableBody>
         </Table>
       </Card>
+      <ConfirmDialog open={!!toDelete} title="Hapus Pengguna" description={`Yakin ingin menghapus ${toDelete?.name}? Semua laporan miliknya akan ikut terhapus.`} loading={busyId === toDelete?.id} onConfirm={confirmDelete} onCancel={() => setToDelete(null)} />
     </div>
   );
 }

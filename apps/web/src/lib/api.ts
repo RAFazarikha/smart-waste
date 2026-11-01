@@ -30,7 +30,14 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...((options.headers as Record<string, string>) || {}),
   };
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, { ...options, headers, signal: options.signal || AbortSignal.timeout(15000) });
+  } catch (err: any) {
+    if (err.name === 'TimeoutError') throw new Error('Koneksi timeout (15s). Server tidak merespons.');
+    if (err.name === 'TypeError') throw new Error('Tidak dapat terhubung ke server API. Pastikan server aktif.');
+    throw err;
+  }
   if (res.status === 204) return {} as T;
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -39,7 +46,7 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
       setCachedUser(null);
       window.location.href = '/login';
     }
-    throw new Error(json.error || 'Terjadi kesalahan sistem');
+    throw new Error(json.error || `Permintaan gagal (${res.status})`);
   }
   return json;
 }

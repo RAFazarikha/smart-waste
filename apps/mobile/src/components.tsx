@@ -23,8 +23,8 @@ export const StatusBadge = ({ status }: { status: string }) => {
   return <Text style={[s.badge, { color: m.color, backgroundColor: m.bg }]}>{m.label}</Text>;
 };
 export const CatBadge = ({ category }: { category: string }) => {
-  const m = CAT_META[category] ?? { label: category, color: COLORS.muted };
-  return <Text style={[s.badge, { color: m.color, backgroundColor: m.color + '22' }]}>{m.label}</Text>;
+  const m = CAT_META[category] ?? { label: category, color: COLORS.muted, bg: '#f1f5f9' };
+  return <Text style={[s.badge, { color: m.color, backgroundColor: m.bg }]}>{m.label}</Text>;
 };
 
 export const s = StyleSheet.create({
