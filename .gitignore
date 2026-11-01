@@ -14,3 +14,4 @@ ml/models/*
 !ml/models/.gitkeep
 .next/
 next-env.d.ts
+apps/mobile/dist/
