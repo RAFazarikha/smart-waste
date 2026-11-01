@@ -9,6 +9,9 @@ MAP = {"organic": ["biological"], "plastic": ["plastic"], "paper": ["paper", "ca
 OUT = Path(__file__).resolve().parents[1] / "data"
 
 def main(raw: Path):
+    hits = [p.parent for p in raw.rglob('biological') if p.is_dir()]
+    assert hits, f"folder 'biological' tidak ditemukan di {raw}"
+    raw = hits[0]
     random.seed(SEED)
     for cls, srcs in MAP.items():
         files = sorted(f for s in srcs for f in (raw / s).glob("*") if f.suffix.lower() in {".jpg", ".jpeg", ".png"})
