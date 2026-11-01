@@ -4,6 +4,10 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { apiFetch, setCachedUser, setToken } from '@/lib/api';
 import { Trash2, AlertCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 type Mode = 'login' | 'register';
 const FIELDS = [
@@ -25,80 +29,63 @@ export default function AuthForm({ mode }: { mode: Mode }) {
     setError(null);
     setLoading(true);
     try {
-      const body = isLogin
-        ? { email: form.email, password: form.password }
-        : { ...form, phone: form.phone || undefined };
+      const body = isLogin ? { email: form.email, password: form.password } : { ...form, phone: form.phone || undefined };
       const res = await apiFetch(`/auth/${mode}`, { method: 'POST', body: JSON.stringify(body) });
-      setToken(res.token);
-      setCachedUser(res.user);
+      setToken(res.token); setCachedUser(res.user);
       router.push(res.user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err: any) { setError(err.message); }
+    finally { setLoading(false); }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-100">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 border border-slate-200">
-        <div className="flex flex-col items-center mb-6">
-          <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center text-white mb-2">
-            <Trash2 className="w-7 h-7" aria-hidden />
+    <div className="min-h-screen flex items-center justify-center p-4 bg-muted/40">
+      <Card className="w-full max-w-md shadow-lg">
+        <CardHeader className="text-center items-center">
+          <div className="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-2">
+            <Trash2 className="size-6" aria-hidden />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">{isLogin ? 'Smart Waste System' : 'Daftar Akun Baru'}</h1>
-          <p className="text-sm text-slate-500 text-center">
+          <CardTitle className="text-2xl">{isLogin ? 'Smart Waste System' : 'Daftar Akun Baru'}</CardTitle>
+          <CardDescription>
             {isLogin ? 'Masuk ke portal pelaporan sampah cerdas' : 'Bergabung untuk melaporkan sampah di sekitarmu'}
-          </p>
-        </div>
-
-        {error && (
-          <div role="alert" className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-lg flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" aria-hidden />
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={submit} className="space-y-3">
-          {FIELDS.filter((f) => !('only' in f) || f.only === mode).map((f) => (
-            <div key={f.k}>
-              <label htmlFor={f.k} className="block text-xs font-semibold text-slate-600 mb-1">{f.label}</label>
-              <input
-                id={f.k}
-                type={f.type}
-                required={!('optional' in f)}
-                minLength={f.k === 'password' && !isLogin ? 6 : undefined}
-                placeholder={f.ph}
-                value={form[f.k] ?? ''}
-                onChange={(e) => setForm({ ...form, [f.k]: e.target.value })}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <div role="alert" className="mb-4 p-3 bg-destructive/10 border border-destructive/20 text-destructive text-sm rounded-lg flex items-center gap-2">
+              <AlertCircle className="size-4 shrink-0" aria-hidden />{error}
             </div>
-          ))}
-          <button
-            disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-medium py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 mt-2"
-          >
-            {loading && <Loader2 className="w-4 h-4 animate-spin" aria-hidden />}
-            {isLogin ? 'Masuk' : 'Daftar Sekarang'}
-          </button>
-        </form>
-
-        <p className="mt-5 text-center text-xs text-slate-500">
-          {isLogin ? 'Belum punya akun? ' : 'Sudah punya akun? '}
-          <Link href={isLogin ? '/register' : '/login'} className="text-emerald-600 font-semibold hover:underline">
-            {isLogin ? 'Daftar Warga' : 'Masuk'}
-          </Link>
-        </p>
-
-        {isLogin && (
-          <div className="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-400">
-            <p className="font-semibold text-slate-500 mb-1">Akun Demo:</p>
-            <p>Admin: admin@smartwaste.id / Admin123!</p>
-            <p>User: user@smartwaste.id / User123!</p>
-          </div>
-        )}
-      </div>
+          )}
+          <form onSubmit={submit} className="space-y-3">
+            {FIELDS.filter((f) => !('only' in f) || f.only === mode).map((f) => (
+              <div key={f.k} className="space-y-1.5">
+                <Label htmlFor={f.k}>{f.label}</Label>
+                <Input
+                  id={f.k} type={f.type} required={!('optional' in f)}
+                  minLength={f.k === 'password' && !isLogin ? 6 : undefined} placeholder={f.ph}
+                  value={form[f.k] ?? ''} onChange={(e) => setForm({ ...form, [f.k]: e.target.value })}
+                />
+              </div>
+            ))}
+            <Button disabled={loading} className="w-full mt-2">
+              {loading && <Loader2 className="animate-spin" aria-hidden />}
+              {isLogin ? 'Masuk' : 'Daftar Sekarang'}
+            </Button>
+          </form>
+          <p className="mt-5 text-center text-xs text-muted-foreground">
+            {isLogin ? 'Belum punya akun? ' : 'Sudah punya akun? '}
+            <Link href={isLogin ? '/register' : '/login'} className="text-primary font-semibold hover:underline">
+              {isLogin ? 'Daftar Warga' : 'Masuk'}
+            </Link>
+          </p>
+          {isLogin && (
+            <div className="mt-6 pt-4 border-t text-xs text-muted-foreground space-y-0.5">
+              <p className="font-semibold text-foreground mb-1">Akun Demo:</p>
+              <p>Admin: admin@smartwaste.id / Admin123!</p>
+              <p>User: user@smartwaste.id / User123!</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

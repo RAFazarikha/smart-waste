@@ -1,4 +1,5 @@
+'use client';
 import AuthForm from '@/components/AuthForm';
-export default function Page() {
+export default function RegisterPage() {
   return <AuthForm mode="register" />;
 }

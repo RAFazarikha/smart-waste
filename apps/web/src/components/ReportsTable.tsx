@@ -5,6 +5,11 @@ import { apiFetch } from '@/lib/api';
 import { fmtDate } from '@/lib/ui';
 import { CategoryBadge, StatusBadge } from './Badge';
 import ReportModal from './ReportModal';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 export default function ReportsTable({ admin }: { admin: boolean }) {
   const [rows, setRows] = useState<any[]>([]);
@@ -16,7 +21,6 @@ export default function ReportsTable({ admin }: { admin: boolean }) {
   const [open, setOpen] = useState<string | null>(null);
   const [err, setErr] = useState('');
 
-  // debounce pencarian 300ms agar tidak menembak API tiap ketukan
   const [dq, setDq] = useState('');
   useEffect(() => { const t = setTimeout(() => { setDq(q); setPage(1); }, 300); return () => clearTimeout(t); }, [q]);
 
@@ -31,54 +35,55 @@ export default function ReportsTable({ admin }: { admin: boolean }) {
     if (!confirm('Hapus laporan ini?')) return;
     try { await apiFetch(`/reports/${id}`, { method: 'DELETE' }); load(); } catch (e: any) { setErr(e.message); }
   };
-  const sel = 'border border-slate-300 rounded-lg px-2 py-2 text-sm bg-white';
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-slate-800 mb-4">{admin ? 'Manajemen Laporan' : 'Laporan Saya'}</h1>
-      <div className="flex flex-wrap gap-2 mb-4">
+    <div className="space-y-4">
+      <h1 className="text-2xl font-bold tracking-tight">{admin ? 'Manajemen Laporan' : 'Laporan Saya'}</h1>
+      <div className="flex flex-wrap gap-2">
         <div className="relative flex-1 min-w-48">
-          <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" aria-hidden />
-          <input aria-label="Cari laporan" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari judul, deskripsi, pelapor..." className={`${sel} w-full pl-9`} />
+          <Search className="size-4 absolute left-3 top-2.5 text-muted-foreground" aria-hidden />
+          <Input aria-label="Cari laporan" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari judul, deskripsi, pelapor..." className="pl-9" />
         </div>
-        <select aria-label="Filter status" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className={sel}>
+        <Select aria-label="Filter status" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
           <option value="">Semua status</option><option value="pending">Pending</option><option value="in_progress">In Progress</option>
           <option value="completed">Completed</option><option value="rejected">Rejected</option>
-        </select>
-        <select aria-label="Filter kategori" value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }} className={sel}>
+        </Select>
+        <Select aria-label="Filter kategori" value={category} onChange={(e) => { setCategory(e.target.value); setPage(1); }}>
           <option value="">Semua kategori</option><option value="organic">Organik</option><option value="plastic">Plastik</option><option value="paper">Kertas</option>
-        </select>
+        </Select>
       </div>
-      {err && <p role="alert" className="text-red-600 text-sm mb-2">{err}</p>}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs text-slate-500">
-            <tr><th className="p-3">Foto</th><th className="p-3">Judul</th><th className="p-3">Kategori</th><th className="p-3">Lokasi</th>
-              {admin && <th className="p-3">Pelapor</th>}<th className="p-3">Tanggal</th><th className="p-3">Status</th><th className="p-3"><span className="sr-only">Aksi</span></th></tr>
-          </thead>
-          <tbody>
+      {err && <p role="alert" className="text-destructive text-sm">{err}</p>}
+      <Card className="p-0 overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Foto</TableHead><TableHead>Judul</TableHead><TableHead>Kategori</TableHead><TableHead>Lokasi</TableHead>
+              {admin && <TableHead>Pelapor</TableHead>}<TableHead>Tanggal</TableHead><TableHead>Status</TableHead><TableHead><span className="sr-only">Aksi</span></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {rows.map((r) => (
-              <tr key={r.id} className="border-t hover:bg-slate-50">
-                <td className="p-3">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={r.imageUrl} alt="" className="w-12 h-12 rounded object-cover bg-slate-100" /></td>
-                <td className="p-3 font-medium max-w-48"><button onClick={() => setOpen(r.id)} className="text-left hover:text-emerald-700 hover:underline">{r.title}</button></td>
-                <td className="p-3"><CategoryBadge category={r.category} /></td>
-                <td className="p-3 text-slate-500 max-w-40 truncate">{r.address || `${r.latitude.toFixed(3)}, ${r.longitude.toFixed(3)}`}</td>
-                {admin && <td className="p-3">{r.user?.name}</td>}
-                <td className="p-3 whitespace-nowrap">{fmtDate(r.createdAt)}</td>
-                <td className="p-3"><StatusBadge status={r.status} /></td>
-                <td className="p-3"><button onClick={() => remove(r.id)} aria-label={`Hapus ${r.title}`} className="text-slate-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button></td>
-              </tr>
+              <TableRow key={r.id}>
+                <TableCell>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={r.imageUrl} alt="" className="size-11 rounded-lg object-cover bg-muted" /></TableCell>
+                <TableCell className="font-medium max-w-48"><button onClick={() => setOpen(r.id)} className="text-left hover:text-primary hover:underline">{r.title}</button></TableCell>
+                <TableCell><CategoryBadge category={r.category} /></TableCell>
+                <TableCell className="text-muted-foreground max-w-40 truncate">{r.address || `${r.latitude.toFixed(3)}, ${r.longitude.toFixed(3)}`}</TableCell>
+                {admin && <TableCell>{r.user?.name}</TableCell>}
+                <TableCell className="whitespace-nowrap text-muted-foreground">{fmtDate(r.createdAt)}</TableCell>
+                <TableCell><StatusBadge status={r.status} /></TableCell>
+                <TableCell><Button variant="ghost" size="icon" onClick={() => remove(r.id)} aria-label={`Hapus ${r.title}`} className="text-muted-foreground hover:text-destructive"><Trash2 className="size-4" /></Button></TableCell>
+              </TableRow>
             ))}
-            {!rows.length && <tr><td colSpan={8} className="p-8 text-center text-slate-400">Tidak ada laporan.</td></tr>}
-          </tbody>
-        </table>
-      </div>
-      <div className="flex items-center justify-between mt-3 text-sm text-slate-600">
+            {!rows.length && <TableRow><TableCell colSpan={8} className="p-8 text-center text-muted-foreground">Tidak ada laporan.</TableCell></TableRow>}
+          </TableBody>
+        </Table>
+      </Card>
+      <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>{meta.total} laporan</span>
         <div className="flex items-center gap-2">
-          <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-3 py-1 border rounded-lg disabled:opacity-40">Sebelumnya</button>
-          <span>{meta.page} / {meta.totalPages || 1}</span>
-          <button disabled={page >= meta.totalPages} onClick={() => setPage(page + 1)} className="px-3 py-1 border rounded-lg disabled:opacity-40">Berikutnya</button>
+          <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>Sebelumnya</Button>
+          <span className="text-xs">{meta.page} / {meta.totalPages || 1}</span>
+          <Button variant="outline" size="sm" disabled={page >= meta.totalPages} onClick={() => setPage(page + 1)}>Berikutnya</Button>
         </div>
       </div>
       {open && <ReportModal id={open} admin={admin} onClose={() => setOpen(null)} onChanged={load} />}

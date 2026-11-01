@@ -13,8 +13,8 @@ Seluruh fondasi kode di repo (`apps/api`, `apps/web`, `apps/mobile`, `packages/s
    - Buat bucket baru bernama `reports`.
    - Centang opsi **Public bucket** (agar gambar laporan bisa diakses via URL publik).
 3. Masuk ke menu **Project Settings > Database**:
-   - Salin **Connection string (URI)** mode *Transaction pooler* (port 6543) -> masukkan ke `DATABASE_URL`.
-   - Salin **Connection string (URI)** mode *Direct connection* (port 5432) -> masukkan ke `DIRECT_URL`.
+   - Salin **Connection string (URI)** mode _Transaction pooler_ (port 6543) -> masukkan ke `DATABASE_URL`.
+   - Salin **Connection string (URI)** mode _Direct connection_ (port 5432) -> masukkan ke `DIRECT_URL`.
 4. Masuk ke **Project Settings > API**:
    - Salin **Project URL** -> masukkan ke `SUPABASE_URL`.
    - Salin **service_role (secret)** key -> masukkan ke `SUPABASE_SERVICE_KEY`.
@@ -62,9 +62,9 @@ Seluruh fondasi kode di repo (`apps/api`, `apps/web`, `apps/mobile`, `packages/s
 ## Tahap 3: Uji Coba Lokal End-to-End (Estimasi: 15 menit)
 
 1. Jalankan inference server ML:
-   ```bash
+   ```fish
    cd ~/Projects/smart-waste/ml
-   source venv/bin/activate 2>/dev/null || python3 -m venv venv && source venv/bin/activate
+   source venv/bin/activate.fish
    pip install -r requirements.txt
    uvicorn api.main:app --port 8000
    ```
@@ -95,6 +95,7 @@ Seluruh fondasi kode di repo (`apps/api`, `apps/web`, `apps/mobile`, `packages/s
 ## Tahap 4: Deploy ke VPS Nala & Vercel (Estimasi: 30 menit)
 
 ### A. Backend & ML di VPS Nala (Docker Compose)
+
 1. Push repo lokal ke GitHub pribadimu:
    ```bash
    git remote add origin git@github.com:RAFazarikha/smart-waste.git
@@ -112,6 +113,7 @@ Seluruh fondasi kode di repo (`apps/api`, `apps/web`, `apps/mobile`, `packages/s
    - Test akses: `curl https://<domain-kamu>/health` -> `{"status":"ok"}`
 
 ### B. Portal Web di Vercel
+
 1. Masuk ke dashboard [Vercel](https://vercel.com) > **Add New Project**.
 2. Pilih repo `smart-waste`.
 3. Set **Root Directory** ke `apps/web`.
@@ -120,6 +122,7 @@ Seluruh fondasi kode di repo (`apps/api`, `apps/web`, `apps/mobile`, `packages/s
 5. Klik **Deploy**. (Domain otomatis didapat: misal `smart-waste-web.vercel.app`).
 
 ### C. Build APK Android via EAS
+
 1. Dari folder mobile:
    ```bash
    cd ~/Projects/smart-waste/apps/mobile

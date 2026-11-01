@@ -2,6 +2,10 @@
 import { useEffect, useState } from 'react';
 import { apiFetch, getCachedUser } from '@/lib/api';
 import { fmtDate } from '@/lib/ui';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 
 export default function UsersTable() {
   const [rows, setRows] = useState<any[]>([]);
@@ -15,31 +19,35 @@ export default function UsersTable() {
   const del = (u: any) => confirm(`Hapus ${u.name}? Laporannya ikut terhapus.`) && act(() => apiFetch(`/users/${u.id}`, { method: 'DELETE' }));
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-slate-800 mb-4">Manajemen Pengguna</h1>
-      {err && <p role="alert" className="text-red-600 text-sm mb-2">{err}</p>}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs text-slate-500">
-            <tr><th className="p-3">Nama</th><th className="p-3">Email</th><th className="p-3">Role</th><th className="p-3">Laporan</th><th className="p-3">Bergabung</th><th className="p-3"><span className="sr-only">Aksi</span></th></tr>
-          </thead>
-          <tbody>
+    <div className="space-y-4">
+      <h1 className="text-2xl font-bold tracking-tight">Manajemen Pengguna</h1>
+      {err && <p role="alert" className="text-destructive text-sm">{err}</p>}
+      <Card className="p-0 overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Nama</TableHead><TableHead>Email</TableHead><TableHead>Role</TableHead><TableHead>Laporan</TableHead><TableHead>Bergabung</TableHead><TableHead><span className="sr-only">Aksi</span></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {rows.map((u) => (
-              <tr key={u.id} className="border-t">
-                <td className="p-3 font-medium">{u.name}</td><td className="p-3">{u.email}</td>
-                <td className="p-3"><span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-700'}`}>{u.role}</span></td>
-                <td className="p-3">{u.report_count}</td><td className="p-3 whitespace-nowrap">{fmtDate(u.createdAt)}</td>
-                <td className="p-3 whitespace-nowrap text-right">
+              <TableRow key={u.id}>
+                <TableCell className="font-medium">{u.name}</TableCell>
+                <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                <TableCell><Badge variant={u.role === 'admin' ? 'purple' : 'secondary'}>{u.role}</Badge></TableCell>
+                <TableCell>{u.report_count}</TableCell>
+                <TableCell className="whitespace-nowrap text-muted-foreground">{fmtDate(u.createdAt)}</TableCell>
+                <TableCell className="whitespace-nowrap text-right space-x-2">
                   {u.id !== me?.id && (<>
-                    <button onClick={() => role(u)} className="text-xs text-emerald-700 hover:underline mr-3">Jadikan {u.role === 'admin' ? 'user' : 'admin'}</button>
-                    <button onClick={() => del(u)} className="text-xs text-red-600 hover:underline">Hapus</button>
+                    <Button variant="outline" size="sm" onClick={() => role(u)}>Jadikan {u.role === 'admin' ? 'user' : 'admin'}</Button>
+                    <Button variant="ghost" size="sm" onClick={() => del(u)} className="text-destructive hover:bg-destructive/10">Hapus</Button>
                   </>)}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </TableBody>
+        </Table>
+      </Card>
     </div>
   );
 }
