@@ -12,3 +12,5 @@ __pycache__/
 ml/data/
 ml/models/*
 !ml/models/.gitkeep
+.next/
+next-env.d.ts
