@@ -1,0 +1,14 @@
+services:
+  api:
+    build: { context: ., dockerfile: apps/api/Dockerfile }
+    ports: ["4000:4000"]
+    env_file: .env
+    environment:
+      ML_API_URL: http://ml:8000
+      PORT: "4000"
+    restart: unless-stopped
+    depends_on: [ml]
+  ml:
+    build: { context: ., dockerfile: ml/Dockerfile }
+    ports: ["8000:8000"]
+    restart: unless-stopped
