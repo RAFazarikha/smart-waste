@@ -73,7 +73,7 @@ Training (disarankan di Colab GPU): buka `ml/notebooks/smart_waste_training.ipyn
 
 Atau lokal: `python ml/src/prepare_dataset.py <folder_dataset_mentah>` lalu `python ml/src/train.py` dari folder `ml/`.
 
-Hasil evaluasi (akurasi test, confusion matrix, classification report): lihat `ml/results/`. Bagian ini diisi setelah training dijalankan.
+Hasil evaluasi (akurasi test, confusion matrix, classification report): lihat `ml/results/`. Test accuracy: **95.56%** (172/180 sampel test benar: Organic 58/60, Paper 54/60, Plastic 60/60).
 
 Inference API:
 
