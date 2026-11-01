@@ -1,0 +1,14 @@
+{
+  "name": "smart-waste-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:api": "pnpm --filter @smartwaste/api dev",
+    "dev:web": "pnpm --filter @smartwaste/web dev",
+    "dev:mobile": "pnpm --filter @smartwaste/mobile start",
+    "build": "pnpm -r build",
+    "db:migrate": "pnpm --filter @smartwaste/api prisma migrate dev",
+    "db:generate": "pnpm --filter @smartwaste/api prisma generate",
+    "db:seed": "pnpm --filter @smartwaste/api prisma db seed"
+  }
+}

@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  admin
+  user
+}
+
+enum Category {
+  organic
+  plastic
+  paper
+}
+
+enum Status {
+  pending
+  in_progress
+  completed
+  rejected
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String   @db.VarChar(100)
+  email        String   @unique @db.VarChar(150)
+  passwordHash String   @map("password_hash")
+  role         Role     @default(user)
+  phone        String?  @db.VarChar(25)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  reports Report[]
+  logs    ReportStatusLog[]
+
+  @@map("users")
+}
+
+model Report {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  title        String   @db.VarChar(150)
+  description  String
+  category     Category
+  aiConfidence Decimal? @map("ai_confidence") @db.Decimal(5, 4)
+  imageUrl     String   @map("image_url")
+  latitude     Decimal  @db.Decimal(10, 7)
+  longitude    Decimal  @db.Decimal(10, 7)
+  address      String?
+  status       Status   @default(pending)
+  adminNote    String?  @map("admin_note")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs ReportStatusLog[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt(sort: Desc)])
+  @@map("reports")
+}
+
+model ReportStatusLog {
+  id              String   @id @default(uuid())
+  reportId        String   @map("report_id")
+  changedByUserId String   @map("changed_by_user_id")
+  fromStatus      Status   @map("from_status")
+  toStatus        Status   @map("to_status")
+  note            String?
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  report    Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  changedBy User   @relation(fields: [changedByUserId], references: [id])
+
+  @@map("report_status_logs")
+}

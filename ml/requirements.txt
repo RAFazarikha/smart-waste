@@ -1,0 +1,9 @@
+torch
+torchvision
+scikit-learn
+matplotlib
+seaborn
+pillow
+fastapi
+uvicorn[standard]
+python-multipart

@@ -1,0 +1,14 @@
+node_modules/
+.env
+.env.local
+dist/
+build/
+.next/
+.expo/
+*.pth
+*.pt
+__pycache__/
+*.pyc
+ml/data/
+ml/models/*
+!ml/models/.gitkeep
