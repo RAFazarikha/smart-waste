@@ -8,3 +8,7 @@ allowBuilds:
   esbuild: true
   '@scarf/scarf': false
 nodeLinker: hoisted
+supportedArchitectures:
+  os: [linux]
+  cpu: [x64]
+  libc: [glibc]
