@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiFetch } from '../lib/api';
 import { useAuth } from '../auth';
 import { COLORS } from '../lib/ui';
@@ -8,6 +9,7 @@ import { CatBadge, ErrorText, StatusBadge, s } from '../components';
 
 export default function HomeScreen({ navigation }: any) {
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const [stats, setStats] = useState<any>(null);
   const [recent, setRecent] = useState<any[]>([]);
   const [err, setErr] = useState('');
@@ -25,7 +27,7 @@ export default function HomeScreen({ navigation }: any) {
   const active = stats ? stats.pending_count + stats.in_progress_count : 0;
   return (
     <View style={s.screen}>
-      <ScrollView contentContainerStyle={s.pad}
+      <ScrollView contentContainerStyle={[s.pad, { paddingBottom: insets.bottom + 88 }]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
         <View style={[s.card, { backgroundColor: COLORS.primary, borderColor: COLORS.primary }]}>
           <Text style={{ color: '#d1fae5', fontSize: 13 }}>Halo,</Text>
@@ -53,7 +55,7 @@ export default function HomeScreen({ navigation }: any) {
         ))}
       </ScrollView>
       <Pressable accessibilityRole="button" accessibilityLabel="Laporkan sampah baru" onPress={() => navigation.navigate('NewReport')}
-        style={{ position: 'absolute', right: 20, bottom: 24, backgroundColor: COLORS.primary, borderRadius: 30, paddingHorizontal: 20, height: 56, justifyContent: 'center', elevation: 6 }}>
+        style={{ position: 'absolute', right: 20, bottom: insets.bottom + 16, backgroundColor: COLORS.primary, borderRadius: 30, paddingHorizontal: 20, height: 56, justifyContent: 'center', elevation: 6 }}>
         <Text style={{ color: '#fff', fontWeight: '700' }}>+ Laporkan Sampah</Text>
       </Pressable>
     </View>

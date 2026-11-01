@@ -49,11 +49,11 @@ export default function Shell({ role, children }: { role: 'admin' | 'user'; chil
     <div className="min-h-screen md:flex bg-muted/30">
       <header className="md:hidden flex items-center justify-between border-b bg-card px-4 h-14 sticky top-0 z-30">
         <span className="font-bold flex items-center gap-2"><Trash2 className="size-5 text-primary" aria-hidden /> Smart Waste</span>
-        <Button variant="ghost" size="icon" onClick={() => setOpen(!open)} aria-label={open ? 'Tutup menu' : 'Buka menu'}>
+        <Button variant="ghost" size="icon" onClick={() => setOpen(!open)} aria-label={open ? 'Tutup menu' : 'Buka menu'} aria-expanded={open} aria-controls="sidebar-nav">
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </Button>
       </header>
-      <aside className={`${open ? 'block' : 'hidden'} md:flex md:flex-col fixed md:sticky top-14 md:top-0 inset-x-0 md:inset-x-auto z-20 md:w-64 md:h-screen border-r bg-card p-4 gap-2`}>
+      <aside id="sidebar-nav" className={`${open ? 'block' : 'hidden'} md:flex md:flex-col fixed md:sticky top-14 md:top-0 inset-x-0 md:inset-x-auto z-20 md:w-64 md:h-screen border-r bg-card p-4 gap-2`}>
         <div className="hidden md:flex items-center gap-2.5 font-bold text-lg mb-6 px-2 text-foreground">
           <div className="size-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
             <Trash2 className="size-5" aria-hidden />

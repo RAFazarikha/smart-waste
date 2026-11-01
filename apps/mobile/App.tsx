@@ -25,7 +25,7 @@ function Root() {
           <Stack.Screen name="Home" component={HomeScreen} options={({ navigation }) => ({ title: 'Smart Waste',
             headerRight: () => (<View style={{ flexDirection: 'row', gap: 16 }}>
               {[['Riwayat', 'History'], ['Profil', 'Profile']].map(([l, r]) => (
-                <Pressable key={r} accessibilityRole="button" onPress={() => navigation.navigate(r)}><Text style={{ color: '#fff', fontWeight: '600' }}>{l}</Text></Pressable>))}
+                <Pressable key={r} accessibilityRole="button" hitSlop={12} style={{ minHeight: 44, justifyContent: 'center' }} onPress={() => navigation.navigate(r)}><Text style={{ color: '#fff', fontWeight: '600' }}>{l}</Text></Pressable>))}
             </View>) })} />
           <Stack.Screen name="NewReport" component={NewReportScreen} options={{ title: 'Laporkan Sampah' }} />
           <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'Riwayat Laporan' }} />
