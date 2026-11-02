@@ -32,10 +32,15 @@ export async function setCachedUser(u: any | null) {
 
 async function handleFetch(url: string, options: RequestInit = {}): Promise<Response> {
   try {
-    return await fetch(url, { ...options, signal: options.signal || AbortSignal.timeout(15000) });
+    return await fetch(url, options);
   } catch (err: any) {
-    if (err.name === 'TimeoutError') throw new Error('Koneksi timeout. Pastikan server API aktif.');
-    if (err.name === 'TypeError') throw new Error('Gagal terhubung ke API. Periksa koneksi internet / IP server.');
+    const msg = String(err?.message || err);
+    if (msg.includes('canceled') || msg.includes('Aborted')) {
+      throw new Error('Koneksi terputus ke server API. Periksa IP laptop dan pastikan API port 4000 aktif.');
+    }
+    if (err.name === 'TypeError' || msg.includes('Network request failed') || msg.includes('fetch failed')) {
+      throw new Error('Gagal terhubung ke API. Pastikan HP dan laptop di satu WiFi.');
+    }
     throw err;
   }
 }
