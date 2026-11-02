@@ -1,4 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
+import { File } from 'expo-file-system';
 
 export const API_BASE = process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:4000/api';
 
@@ -66,19 +67,28 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
   return json;
 }
 
+// SDK 58: part {uri,name,type} ala React Native ditolak ("Unsupported FormDataPart").
+// fetch Expo menerima objek dengan name, type (string) dan bytes(); isi file dibaca lewat File.
+function imageForm(fileUri: string): FormData {
+  const file = new File(fileUri);
+  const ext = (/\.(\w+)(\?.*)?$/.exec(fileUri)?.[1] || 'jpg').toLowerCase();
+  const part = {
+    name: `photo.${ext}`,
+    type: ext === 'png' ? 'image/png' : 'image/jpeg',
+    bytes: () => file.bytes(),
+  };
+  const form = new FormData();
+  // @ts-ignore: tipe FormData RN belum mengenal part berbasis bytes()
+  form.append('file', part);
+  return form;
+}
+
 export async function uploadImage(fileUri: string): Promise<string> {
   const token = await getToken();
-  const form = new FormData();
-  const filename = fileUri.split('/').pop() || 'photo.jpg';
-  const match = /\.(\w+)$/.exec(filename);
-  const type = match ? `image/${match[1]}` : 'image/jpeg';
-  // @ts-ignore
-  form.append('file', { uri: fileUri, name: filename, type });
-
   const res = await handleFetch(`${API_BASE}/upload`, {
     method: 'POST',
     headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-    body: form,
+    body: imageForm(fileUri),
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json.error || 'Upload foto gagal. Cek koneksi.');
@@ -87,17 +97,10 @@ export async function uploadImage(fileUri: string): Promise<string> {
 
 export async function classifyImage(fileUri: string): Promise<any> {
   const token = await getToken();
-  const form = new FormData();
-  const filename = fileUri.split('/').pop() || 'photo.jpg';
-  const match = /\.(\w+)$/.exec(filename);
-  const type = match ? `image/${match[1]}` : 'image/jpeg';
-  // @ts-ignore
-  form.append('file', { uri: fileUri, name: filename, type });
-
   const res = await handleFetch(`${API_BASE}/ai/classify`, {
     method: 'POST',
     headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-    body: form,
+    body: imageForm(fileUri),
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(json.error || 'Klasifikasi AI gagal.');
