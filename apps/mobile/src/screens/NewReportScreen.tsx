@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { Alert, Image, ScrollView, Text, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { Alert, Image, Text, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { classifyImage, apiFetch, uploadImage } from '../lib/api';
-import { Button, ErrorText, Field, s } from '../components';
+import { InputRef, Button, ErrorText, Field, KeyboardScroll, s } from '../components';
 import { CAT_META, COLORS } from '../lib/ui';
 
 const CATS = ['organic', 'plastic', 'paper'] as const;
@@ -18,6 +18,7 @@ export default function NewReportScreen({ navigation }: any) {
   const [desc, setDesc] = useState('');
   const [busy, setBusy] = useState<'' | 'ai' | 'gps' | 'send'>('');
   const [err, setErr] = useState('');
+  const descRef = useRef<InputRef>(null);
 
   const detect = async (u: string) => {
     setBusy('ai'); setErr('');
@@ -70,7 +71,7 @@ export default function NewReportScreen({ navigation }: any) {
   };
 
   return (
-    <ScrollView style={s.screen} contentContainerStyle={s.pad} keyboardShouldPersistTaps="handled">
+    <KeyboardScroll>
       <Text style={s.h2}>1. Foto sampah</Text>
       {uri && <Image source={{ uri }} accessibilityLabel="Foto sampah" style={{ width: '100%', height: 220, borderRadius: 12, marginVertical: 10, backgroundColor: '#e2e8f0' }} />}
       <View style={[s.row, { marginVertical: 8 }]}>
@@ -97,10 +98,10 @@ export default function NewReportScreen({ navigation }: any) {
       {coords && <Text style={[s.muted, { marginBottom: 8 }]}>{address || 'Alamat tidak tersedia'} ({coords.latitude.toFixed(5)}, {coords.longitude.toFixed(5)})</Text>}
 
       <Text style={[s.h2, { marginVertical: 8 }]}>4. Detail</Text>
-      <Field label="Judul" value={title} onChangeText={setTitle} autoCapitalize="sentences" />
-      <Field label="Deskripsi" value={desc} onChangeText={setDesc} multiline numberOfLines={3} autoCapitalize="sentences" style={{ minHeight: 80, textAlignVertical: 'top' }} />
+      <Field label="Judul" value={title} onChangeText={setTitle} autoCapitalize="sentences" maxLength={100} onSubmitEditing={() => descRef.current?.focus()} />
+      <Field ref={descRef} label="Deskripsi" value={desc} onChangeText={setDesc} multiline numberOfLines={3} autoCapitalize="sentences" />
       <ErrorText msg={err} />
       <Button title="Kirim Laporan" onPress={submit} loading={busy === 'send'} disabled={busy === 'ai'} />
-    </ScrollView>
+    </KeyboardScroll>
   );
 }

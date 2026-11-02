@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { apiFetch } from '../lib/api';
 import { useAuth } from '../auth';
 import { COLORS } from '../lib/ui';
-import { Button, CatBadge, ErrorText, StatusBadge, s } from '../components';
+import { Button, CardSkeleton, CatBadge, ErrorText, Skeleton, StatusBadge, s } from '../components';
 
 export default function HomeScreen({ navigation }: any) {
   const { user } = useAuth();
@@ -28,7 +28,7 @@ export default function HomeScreen({ navigation }: any) {
   return (
     <View style={s.screen}>
       <ScrollView contentContainerStyle={[s.pad, { paddingBottom: insets.bottom + 88 }]}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
+        refreshControl={<RefreshControl colors={[COLORS.primary]} tintColor={COLORS.primary} refreshing={refreshing} onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
         <View style={[s.card, { backgroundColor: COLORS.primary, borderColor: COLORS.primary }]}>
           <Text style={{ color: '#d1fae5', fontSize: 13 }}>Halo,</Text>
           <Text style={{ color: '#fff', fontSize: 22, fontWeight: '700' }}>{user?.name}</Text>
@@ -40,6 +40,9 @@ export default function HomeScreen({ navigation }: any) {
             <Button title="Coba Lagi" onPress={load} variant="outline" />
           </View>
         ) : null}
+        {!stats && !err && (
+          <View style={[s.row, { marginBottom: 12 }]}>{[0, 1, 2].map((i) => <View key={i} style={[s.card, { flex: 1, marginBottom: 0, alignItems: 'center', gap: 6 }]}><Skeleton height={28} width={40} /><Skeleton height={12} width={50} /></View>)}</View>
+        )}
         {stats && (
           <View style={[s.row, { marginBottom: 12 }]}>
             {[['Total', stats.total_reports], ['Diproses', stats.in_progress_count], ['Selesai', stats.completed_count]].map(([l, v]) => (
@@ -51,7 +54,8 @@ export default function HomeScreen({ navigation }: any) {
           </View>
         )}
         <Text style={[s.h2, { marginBottom: 8 }]}>Laporan Terbaru</Text>
-        {!recent.length && !err && <Text style={s.muted}>Belum ada laporan. Tekan tombol + untuk membuat.</Text>}
+        {!stats && !err && <><CardSkeleton /><CardSkeleton /></>}
+        {stats && !recent.length && !err && <Text style={s.muted}>Belum ada laporan. Tekan tombol + untuk membuat.</Text>}
         {recent.map((r) => (
           <Pressable key={r.id} accessibilityRole="button" onPress={() => navigation.navigate('Detail', { id: r.id })} style={s.card}>
             <Text style={s.h2}>{r.title}</Text>

@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Image, ScrollView, Text, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { apiFetch } from '../lib/api';
-import { Button, CatBadge, ErrorText, StatusBadge, s } from '../components';
+import { Button, CatBadge, ErrorText, Skeleton, StatusBadge, s } from '../components';
 
 export default function DetailScreen({ route }: any) {
   const [r, setR] = useState<any>(null);
@@ -16,9 +16,9 @@ export default function DetailScreen({ route }: any) {
     apiFetch(`/reports/${route.params.id}`).then((x) => setR(x.data)).catch((e) => setErr(e.message));
   };
   if (!r) return (
-    <View style={[s.screen, s.pad, { justifyContent: 'center', alignItems: 'center' }]}>
+    <View style={[s.screen, s.pad, err ? { justifyContent: 'center', alignItems: 'center' } : null]}>
       <ErrorText msg={err} />
-      {!err && <Text style={s.muted}>Memuat detail laporan...</Text>}
+      {!err && <View style={{ width: '100%' }} accessibilityLabel="Memuat detail laporan"><Skeleton height={220} style={{ borderRadius: 12 }} /><Skeleton height={24} width="70%" style={{ marginTop: 14 }} /><Skeleton height={14} width="40%" style={{ marginTop: 10 }} /><Skeleton height={60} style={{ marginTop: 10 }} /></View>}
       {err && <Button title="Coba Lagi" onPress={reload} variant="outline" />}
     </View>
   );
