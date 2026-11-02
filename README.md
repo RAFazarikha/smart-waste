@@ -18,7 +18,7 @@ packages/shared : tipe TS + skema Zod (dipakai api, web, mobile)
 |---|---|
 | `apps/api` | Express, TypeScript, Prisma, JWT, Swagger (`/api-docs`) |
 | `apps/web` | Next.js 16, Tailwind, Recharts, MapLibre GL |
-| `apps/mobile` | React Native (Expo SDK 51), kamera, GPS, SecureStore |
+| `apps/mobile` | React Native (Expo SDK 58), kamera, GPS, SecureStore |
 | `packages/shared` | Enum dan skema validasi Zod bersama |
 | `ml/` | Training PyTorch (MobileNetV2), FastAPI inference, notebook Colab |
 | `docs/` | `openapi.json`, `erd.md`, naskah video, template email |

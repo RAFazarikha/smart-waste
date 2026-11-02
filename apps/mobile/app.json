@@ -6,9 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "backgroundColor": "#059669"
-    },
     "ios": {
       "supportsTablet": true
     },
@@ -36,6 +33,14 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Izinkan akses lokasi untuk mencatat titik koordinat sampah"
+        }
+      ],
+      "expo-secure-store",
+      "expo-status-bar",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#2e7d32"
         }
       ]
     ]
