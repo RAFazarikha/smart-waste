@@ -80,6 +80,12 @@ export default function NewReportScreen({ navigation }: any) {
 
       <Text style={[s.h2, { marginTop: 12 }]}>2. Kategori {busy === 'ai' && '(AI mendeteksi...)'}</Text>
       {conf != null && <Text style={[s.muted, { marginTop: 4 }]}>Deteksi AI: {CAT_META[category!]?.label} ({(conf * 100).toFixed(1)}%). Ubah jika salah.</Text>}
+      {/* ponytail: ambang tetap 80%, model tidak punya kelas "bukan sampah" */}
+      {conf != null && conf < 0.8 && (
+        <Text accessibilityRole="alert" style={{ marginTop: 6, padding: 10, borderRadius: 8, backgroundColor: '#fef3c7', color: '#78350f', fontSize: 13 }}>
+          Keyakinan AI rendah. Periksa kategori sebelum mengirim.
+        </Text>
+      )}
       <View style={[s.row, { marginVertical: 8 }]}>
         {CATS.map((c) => (
           <View key={c} style={{ flex: 1 }}><Button title={CAT_META[c].label} variant={category === c ? 'primary' : 'outline'} onPress={() => setCategory(c)} /></View>
