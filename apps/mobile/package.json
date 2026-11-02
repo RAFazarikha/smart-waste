@@ -4,7 +4,7 @@
   "private": true,
   "main": "index.ts",
   "scripts": {
-    "start": "expo start --lan",
+    "start": "REACT_NATIVE_PACKAGER_HOSTNAME=100.110.29.115 expo start --host lan",
     "android": "expo start --android",
     "build:apk": "eas build -p android --profile preview",
     "start:tunnel": "expo start --tunnel"
