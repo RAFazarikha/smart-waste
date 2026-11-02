@@ -17,12 +17,21 @@ mediaRouter.post('/upload', authenticate, upload.single('file'), async (req, res
   if (!req.file) return res.status(400).json({ error: 'File JPEG/PNG wajib (maks 5MB)' });
   const base = env('SUPABASE_URL'), bucket = process.env.SUPABASE_BUCKET || 'reports';
   const path = `${randomUUID()}.${req.file.mimetype === 'image/png' ? 'png' : 'jpg'}`;
+  const key = env('SUPABASE_SERVICE_KEY');
   const r = await fetch(`${base}/storage/v1/object/${bucket}/${path}`, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${env('SUPABASE_SERVICE_KEY')}`, 'Content-Type': req.file.mimetype },
+    headers: {
+      Authorization: `Bearer ${key}`,
+      apikey: key,
+      'Content-Type': req.file.mimetype,
+    },
     body: new Uint8Array(req.file.buffer),
   });
-  if (!r.ok) return res.status(502).json({ error: 'Upload storage gagal' });
+  if (!r.ok) {
+    const errText = await r.text().catch(() => '');
+    console.error('Supabase storage upload error:', r.status, errText);
+    return res.status(502).json({ error: 'Upload storage gagal' });
+  }
   res.status(201).json({ url: `${base}/storage/v1/object/public/${bucket}/${path}` });
 });
 
