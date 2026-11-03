@@ -109,7 +109,7 @@ Seluruh fondasi kode di repo (`apps/api`, `apps/web`, `apps/mobile`, `packages/s
    docker compose up -d --build
    ```
 3. Pasang reverse proxy (Nginx / Caddy) di VPS agar API dan docs bisa diakses publik dengan HTTPS:
-   - Misal domain: `https://api-waste.rachmadazizfazarikha.my.id`
+   - Misal domain: `https://smart-waste.rachmadazizfazarikha.my.id`
    - Test akses: `curl https://<domain-kamu>/health` -> `{"status":"ok"}`
 
 ### B. Portal Web di Vercel
@@ -142,5 +142,5 @@ Seluruh fondasi kode di repo (`apps/api`, `apps/web`, `apps/mobile`, `packages/s
    - Ikuti alur menit demi menit yang ada di naskah.
 3. Upload video ke YouTube dengan visibilitas **Unlisted** (atau Google Drive dengan izin akses publik).
 4. Buka template email di `docs/email_submission_template.md`:
-   - Ganti placeholder yang bertanda `<ISI: ...>` dengan link Vercel, link APK, link video, dan hasil akurasi model.
+   - Semua placeholder sudah terisi (link video mengarah ke Google Drive).
 5. Kirim balasan email ke `hiring@bilcode.id`.

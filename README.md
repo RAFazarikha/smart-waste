@@ -23,6 +23,19 @@ packages/shared : tipe TS + skema Zod (dipakai api, web, mobile)
 | `ml/` | Training PyTorch (MobileNetV2), FastAPI inference, notebook Colab |
 | `docs/` | `openapi.json`, `erd.md`, naskah video, template email |
 
+## Link Produksi
+
+| Item | URL |
+|---|---|
+| API | https://smart-waste.rachmadazizfazarikha.my.id/api |
+| Swagger | https://smart-waste.rachmadazizfazarikha.my.id/api-docs |
+| Health check | https://smart-waste.rachmadazizfazarikha.my.id/health |
+| APK Android | https://expo.dev/artifacts/eas/fB_Mz0w7iHQfE1PwgMjnd6_EbdYwipB7L4sWRgkXsA4.apk |
+| Portal web | https://smart-waste-six-chi.vercel.app/ |
+| Video demo | https://drive.google.com/file/d/1u99m-LLa5IVf2toFuUFBQZ-KDWLfIVuJ/view?usp=sharing |
+
+APK memakai API produksi di atas. Install langsung di Android (izinkan "install dari sumber tidak dikenal"), login dengan akun seed.
+
 ## Prasyarat
 
 - Node 20+ dan pnpm 11
@@ -65,7 +78,7 @@ Ganti password ini sebelum dipakai di luar demo.
 
 ## Machine Learning
 
-Dataset: [Garbage Classification (Kaggle, mostafaabla)](https://www.kaggle.com/datasets/mostafaabla/garbage-classification). Kelas dipetakan ke 3 kategori: `biological` jadi Organic, `plastic` jadi Plastic, `paper` + `cardboard` jadi Paper. Diambil 400 gambar per kelas (1.200 total), split 70/15/15 dengan seed 42.
+Dataset: [Garbage Classification (Kaggle, mostafaabla)](https://www.kaggle.com/datasets/mostafaabla/garbage-classification). Kelas dipetakan ke 3 kategori: `biological` jadi Organic, `plastic` jadi Plastic, `paper` + `cardboard` jadi Paper. Dataset tidak disimpan di repo (`ml/data/` kosong). Unduh manual dari Kaggle, atau `kaggle datasets download -d mostafaabla/garbage-classification` lalu unzip. Lisensi mengikuti halaman dataset di Kaggle (dipakai untuk tujuan tes/edukasi). Diambil 400 gambar per kelas (1.200 total), split 70/15/15 dengan seed 42.
 
 Model: MobileNetV2 pretrained ImageNet, head `Dropout(0.3) → Linear(128) → ReLU → Dropout(0.2) → Linear(3)`, AdamW lr 1e-4, batch 32, maks 20 epoch dengan early stopping (patience 4 pada val loss).
 
@@ -74,6 +87,17 @@ Training (disarankan di Colab GPU): buka `ml/notebooks/smart_waste_training.ipyn
 Atau lokal: `python ml/src/prepare_dataset.py <folder_dataset_mentah>` lalu `python ml/src/train.py` dari folder `ml/`.
 
 Hasil evaluasi (akurasi test, confusion matrix, classification report): lihat `ml/results/`. Test accuracy: **95.56%** (172/180 sampel test benar: Organic 58/60, Paper 54/60, Plastic 60/60).
+
+Metrik per kelas (test set, 60 gambar per kelas):
+
+| Kelas | Precision | Recall | F1 |
+|---|---|---|---|
+| Organic | 0,983 | 0,967 | 0,975 |
+| Paper | 0,982 | 0,900 | 0,939 |
+| Plastic | 0,909 | 1,000 | 0,952 |
+| Macro avg | 0,958 | 0,956 | 0,955 |
+
+Analisis: Paper punya recall terendah (6 dari 60 salah) dan Plastic precision terendah, artinya model cenderung menebak "plastic" untuk kertas (dari angka precision/recall, 5 dari 6 kesalahan Paper jatuh ke Plastic). Test set kecil (180 gambar), jadi satu gambar bergeser ±0,6 poin akurasi. Model hanya mengenal 3 kelas; objek di luar itu (logam, kaca) tetap dipaksa masuk salah satunya. Perbaikan: tambah data Paper bervariasi, augmentasi, dan ambang `ai_confidence` minimum.
 
 Inference API:
 
@@ -109,9 +133,9 @@ Tiga tabel: `users`, `reports`, `report_status_logs`. ERD dan indeks di `docs/er
 
 ## Status Pengerjaan
 
-Sudah diverifikasi: typecheck API, web, dan mobile; `next build` (9 rute); bundle Android via `expo export`; smoke test HTTP API (health, docs, guard auth, validasi, guard role).
+Terverifikasi: typecheck API, web, dan mobile; `next build`; bundle Android; smoke test HTTP API; model terlatih (akurasi test 95,56%); API produksi berjalan (`/health` dan `/api-docs` merespons 200); APK sudah dibuild lewat EAS.
 
-Belum diverifikasi end-to-end (menunggu kredensial Supabase dan hasil training): migrasi dan seed ke database nyata, login dan alur laporan lewat UI, deteksi AI dari mobile, angka akurasi model, build APK, deploy.
+Belum diverifikasi: uji end-to-end alur laporan di perangkat fisik (kamera & GPS riil).
 
 ## Catatan Keamanan
 

@@ -1,6 +1,6 @@
 # Panduan & Naskah Video Demo (Maksimal 10 Menit)
 **Posisi**: Fullstack Developer (Coding Test Bilcode Technology)  
-**Kandidat**: <ISI>
+**Kandidat**: Rachmad Aziz Fazarikha
 
 ---
 

@@ -1,7 +1,7 @@
 # Template Email Pengumpulan Hasil Coding Test
 
 **Kepada**: hiring@bilcode.id  
-**Subjek**: Hasil Technical Coding Test - Fullstack Developer - <ISI: nama lengkap>
+**Subjek**: Hasil Technical Coding Test - Fullstack Developer - Rachmad Aziz Fazarikha
 
 ---
 
@@ -16,15 +16,15 @@ Berikut saya lampirkan seluruh berkas dan tautan hasil pengerjaan studi kasus **
    *(Source code lengkap: Web Next.js, Mobile React Native Expo, Backend Express TS + Prisma, dan Machine Learning PyTorch FastAPI)*
 
 2. **Link Demo Website**:  
-   <ISI: URL Vercel setelah deploy>  
+   https://smart-waste-six-chi.vercel.app/  
    - Akun Admin: `admin@smartwaste.id` / `Admin123!`  
    - Akun User: `user@smartwaste.id` / `User123!`
 
 3. **Link Unduh APK Android**:  
-   <ISI: link APK dari EAS / GitHub Release setelah build>
+   https://expo.dev/artifacts/eas/fB_Mz0w7iHQfE1PwgMjnd6_EbdYwipB7L4sWRgkXsA4.apk
 
 4. **Dokumentasi API & Swagger**:  
-   - Swagger UI Interaktif: `<ISI: http://IP-VPS:4000/api-docs setelah deploy>`  
+   - Swagger UI Interaktif: https://smart-waste.rachmadazizfazarikha.my.id/api-docs  
    - OpenAPI 3.0 JSON Spec: [openapi.json](https://github.com/RAFazarikha/smart-waste/blob/main/docs/openapi.json)
 
 5. **Database Schema & ERD**:  
@@ -48,12 +48,13 @@ Berikut saya lampirkan seluruh berkas dan tautan hasil pengerjaan studi kasus **
    - Akurasi Test Set: **95.56% (172/180 benar pada data testing)**
 
 9. **Video Walkthrough Demo (Maksimal 10 Menit)**:  
-   <ISI: link video setelah direkam>
+   https://drive.google.com/file/d/1u99m-LLa5IVf2toFuUFBQZ-KDWLfIVuJ/view?usp=sharing
 
 Seluruh arsitektur, panduan instalasi lokal, dan detail teknis telah saya rangkum pada file **README.md** di repositori.
 
 Besar harapan saya untuk dapat melanjutkan ke tahap *Technical Interview* guna memaparkan arsitektur dan keputusan rekayasa sistem ini secara mendalam.
 
 Hormat saya,  
-**<ISI: nama lengkap>**  
+**Rachmad Aziz Fazarikha**  
+Email: fazarikha923@gmail.com  
 GitHub: github.com/RAFazarikha

@@ -16,3 +16,7 @@ ml/models/*
 next-env.d.ts
 apps/mobile/dist/
 ml/venv/
+
+**/.omc/*
+!**/.omc/skills/
+!**/.omc/skills/**
